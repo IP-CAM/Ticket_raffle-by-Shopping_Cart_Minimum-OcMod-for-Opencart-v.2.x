@@ -1,0 +1,344 @@
+<?xml version="1.0" encoding="utf-8"?>
+<modification>
+    <name>customergroup</name>
+    <version>2.1.0.1</version>
+    <author>OpenCart Ltd</author>
+	<link>http://localhost/opencart2101/</link>
+	<code>rbrother_optioncustomer_group_ocmod</code>
+	<file path="admin/language/english/customer/customer_group.php">
+        <operation>
+            <search><![CDATA[$_['entry_sort_order']  = 'Sort Order';]]></search>
+            <add position="after"><![CDATA[$_['entry_tier_1']= 'Tier 1 Shopping Cart Minimum';
+			$_['entry_tier_1_alert_message']	 = 'Tier 1 Shopping Cart Minimum Alert Message';
+			$_['entry_tier_1_cart_max']			 = 'Tier 1 Shopping Cart Maximum';
+			$_['entry_tier_2_cart-min']			 = 'Tier 2 Shopping Cart Minimum';
+			$_['entry_tier_2_alert_message']			 = 'Tier 2 Shopping Cart Minimum Alert Message';
+			$_['entry_tier_2_cart_max']			 = 'Tier 2 Shopping Cart Maximum';
+			$_['entry_text_apply_msrp']			 = 'Apply MSRP Pricing if minimum is not met';
+				]]>
+			
+			</add>
+        </operation>
+		</file>
+		<file path="admin/controller/customer/customer_group.php">
+        <operation>
+            <search><![CDATA[$data['button_cancel'] = $this->language->get('button_cancel');]]></search>
+            <add position="after"><![CDATA[
+			$data['entry_tier_1'] = $this->language->get('entry_tier_1');
+			$data['tier_1_alert_message'] = $this->language->get('entry_tier_1_alert_message');
+			$data['tier_1_cart_max'] = $this->language->get('entry_tier_1_cart_max');
+			$data['tier_2_cart_min'] = $this->language->get('entry_tier_2_cart-min');
+			$data['tier_2_alert_message'] = $this->language->get('entry_tier_2_alert_message');
+			$data['tier_2_cart_max'] = $this->language->get('entry_tier_2_cart_max');
+			$data['text_apply_msrp'] = $this->language->get('entry_text_apply_msrp');]]>
+			
+			</add>
+        </operation>
+		<operation>
+            <search><![CDATA[$data['header'] = $this->load->controller('common/header');]]></search>
+            <add position="before"><![CDATA[if (isset($this->request->post['Tier1_Shopping_Cart_Minimum'])) {
+		
+			$data['Tier1_Shopping_Cart_Minimum'] = $this->request->post['Tier1_Shopping_Cart_Minimum'];
+			} elseif (!empty($customer_group_info)) {
+			$data['Tier1_Shopping_Cart_Minimum'] = $customer_group_info['Tier1_Shopping_Cart_Minimum'];
+			} else {
+				$data['Tier1_Shopping_Cart_Minimum'] = '';
+			}
+			
+			if (isset($this->request->post['Tier1_Shopping_Cart_Maximum'])) {
+				$data['Tier1_Shopping_Cart_Maximum'] = $this->request->post['Tier1_Shopping_Cart_Maximum'];
+			} elseif (!empty($customer_group_info)) {
+				$data['Tier1_Shopping_Cart_Maximum'] = $customer_group_info['Tier1_Shopping_Cart_Maximum'];
+			} else {
+				$data['Tier1_Shopping_Cart_Maximum'] = '';
+			}
+			if (isset($this->request->post['Tier2_Shopping_Cart_Minimum'])) {
+				$data['Tier2_Shopping_Cart_Minimum'] = $this->request->post['Tier2_Shopping_Cart_Minimum'];
+			} elseif (!empty($customer_group_info)) {
+				$data['Tier2_Shopping_Cart_Minimum'] = $customer_group_info['Tier2_Shopping_Cart_Minimum'];
+			} else {
+				$data['Tier2_Shopping_Cart_Minimum'] = '';
+			}
+			if (isset($this->request->post['Tier2_Shopping_Cart_Maximum'])) {
+				$data['Tier2_Shopping_Cart_Maximum'] = $this->request->post['Tier2_Shopping_Cart_Maximum'];
+			} elseif (!empty($customer_group_info)) {
+				$data['Tier2_Shopping_Cart_Maximum'] = $customer_group_info['Tier2_Shopping_Cart_Maximum'];
+			} else {
+				$data['Tier2_Shopping_Cart_Maximum'] = '';
+			}
+			if (isset($this->request->post['msrp'])) {
+				$data['msrp'] = $this->request->post['msrp'];
+			} elseif (!empty($customer_group_info)) {
+				$data['msrp'] = $customer_group_info['msrp'];
+			} else {
+				$data['msrp'] = '';
+			}
+			]]>
+			
+			</add>
+        </operation>
+		</file>
+    <file path="admin/view/template/customer/customer_group_form.tpl">
+        <operation>
+            <search><![CDATA[</form>]]></search>
+            <add position="before"><![CDATA[<div class="form-group">
+            <label class="col-sm-2 control-label" for="Tier1_Shopping_Cart_Minimum"><?php echo $entry_tier_1; ?></label>
+            <div class="col-sm-10">
+				<input type="text" name="Tier1_Shopping_Cart_Minimum" value="<?php echo $Tier1_Shopping_Cart_Minimum; ?>" placeholder="<?php echo $entry_tier_1; ?>" id="Tier1_Shopping_Cart_Minimum" class="form-control" />
+            </div>
+          </div>
+		  <?php foreach ($languages as $language) { ?>
+		  <div class="form-group">
+            <label class="col-sm-2 control-label" for="input-description2"><?php echo $tier_1_alert_message; ?></label>
+            <div class="col-sm-10">
+              <div class="input-group"><span class="input-group-addon">
+				<img src="view/image/flags/<?php echo $language['image']; ?>" title="<?php echo $language['name']; ?>" /></span>
+					<textarea name="customer_group_description[<?php echo $language['language_id']; ?>][Tier1_Min_alert]" rows="5" placeholder="<?php echo $entry_description; ?>" id="input-description2" class="form-control"><?php echo $tier_1_alert_message; ?></textarea>
+              </div>
+            </div>
+          </div>
+		  <?php } ?>
+		  <div class="form-group">
+				<label class="col-sm-2 control-label" for="tier_1_cart_max"><?php echo $tier_1_cart_max; ?></label>
+					<div class="col-sm-10">
+						<input type="text" name="Tier1_Shopping_Cart_Maximum" value="<?php echo $Tier1_Shopping_Cart_Maximum; ?>" placeholder="<?php echo $tier_1_cart_max; ?>" id="tier_1_cart_max" class="form-control" />
+					</div>
+          </div>
+		  <div class="form-group">
+				<label class="col-sm-2 control-label" for="tier_2_cart_min"><?php echo $tier_2_cart_min; ?></label>
+					<div class="col-sm-10">
+						<input type="text" name="Tier2_Shopping_Cart_Minimum" value="<?php echo $Tier2_Shopping_Cart_Minimum; ?>" placeholder="<?php echo $tier_2_cart_min; ?>" id="tier_2_cart_min" class="form-control" />
+					</div>
+          </div>
+		 <?php foreach ($languages as $language) { ?>
+		 <div class="form-group">
+				<label class="col-sm-2 control-label" for="input-description3"><?php echo $tier_2_alert_message; ?></label>
+				<div class="col-sm-10">
+					<div class="input-group"><span class="input-group-addon">		
+						<img src="view/image/flags/<?php echo $language['image']; ?>" title="<?php echo $language['name']; ?>" /></span>
+								<textarea name="customer_group_description[<?php echo $language['language_id']; ?>][Tier2_Min_alert]" rows="5" placeholder="<?php echo $entry_description; ?>" id="input-description3" class="form-control"><?php echo $tier_2_alert_message; ?></textarea>
+					</div>
+				</div>
+          </div>
+		  <?php } ?>
+		  <div class="form-group">
+				<label class="col-sm-2 control-label" for="tier_2_cart_max"><?php echo $tier_2_cart_max; ?></label>
+						<div class="col-sm-10">
+							<input type="text" name="Tier2_Shopping_Cart_Maximum" value="<?php echo $Tier2_Shopping_Cart_Maximum; ?>" placeholder="<?php echo $tier_2_cart_max; ?>" id="tier_2_cart_max" class="form-control" />
+						</div>
+		</div>
+		  <div class="form-group">
+				<label class="col-sm-2 control-label"><?php echo $text_apply_msrp; ?></label>
+					<div class="col-sm-10">
+						<label class="radio-inline">
+							<?php if ($msrp) { ?>
+							<input type="radio" name="msrp" value="1" checked="checked" />
+							<?php echo $text_yes; ?>
+							<?php } else { ?>
+							<input type="radio" name="msrp" value="1" />
+							<?php echo $text_yes; ?>
+							<?php } ?>
+						</label>
+						<label class="radio-inline">
+							<?php if (!$msrp) { ?>
+							<input type="radio" name="msrp" value="0" checked="checked" />
+							<?php echo $text_no; ?>
+							<?php } else { ?>
+							<input type="radio" name="msrp" value="0" />
+							<?php echo $text_no; ?>
+							<?php } ?>
+						 </label>
+					</div>
+          </div>
+		  
+		  <!--end ------    -->]]></add>
+        </operation>          
+    </file>
+	
+	<file path="admin/model/customer/customer_group.php">
+	<operation>
+	<search><![CDATA[sort_order = '" . (int)$data['sort_order'] . "']]></search>
+		<add position = "iafter"><![CDATA[sort_order = '" . (int)$data['sort_order'] . "'
+		,Tier1_Shopping_Cart_Minimum = '" . (int)$data['Tier1_Shopping_Cart_Minimum'] . "',Tier1_Shopping_Cart_Maximum= '" .(int)$data['Tier1_Shopping_Cart_Maximum'] . "',Tier2_Shopping_Cart_Minimum= '" .(int)$data['Tier2_Shopping_Cart_Minimum'] . "',Tier2_Shopping_Cart_Maximum = '" .(int)$data['Tier2_Shopping_Cart_Maximum'] . "',msrp= '" .(int)$data['msrp'] ."']]>
+	</add>
+	</operation>
+	<operation>
+	<search><![CDATA[description = '" . 		$this->db->escape($value['description']) . "']]></search>
+		<add position = "iafter"><![CDATA[description = '" . 		$this->db->escape($value['description']) . "'
+		,tier1_min_alert = '" . $this->db->escape($value['Tier1_Min_alert']) . "',tier2_min_alert = '" . $this->db->escape($value['Tier2_Min_alert']) . "'
+		
+		]]>
+			</add>
+	</operation>
+	
+	
+	<operation>
+	<search><![CDATA[description = '" . $this->db->escape($value['description']) . "']]></search>
+		<add position = "iafter"><![CDATA[description = '" . $this->db->escape($value['description']) . "'
+		,tier1_min_alert = '" . $this->db->escape($value['Tier1_Min_alert']) . "',tier2_min_alert = '" . $this->db->escape($value['Tier2_Min_alert']) . "'
+		
+		]]>
+			</add>
+	</operation>
+
+		
+		
+	</file>
+	<file path="admin/language/english/catalog/product.php">
+        <operation>
+            <search><![CDATA[$_['entry_option_value']     = 'Option Value';]]></search>
+            <add position="after"><![CDATA[
+			$_['Discount_Ratio_in_Percentage']    = 'Discount Ratio in Percentage';
+			$_['entry_Distributor_Pricing'] ='Distributor Pricing';
+			$_['entry_General_Customer']    ='General Customer';
+			$_['entry_Wholesaler']        ='Wholesaler';
+			$_['entry_Distributor']        ='Distributor';
+			$_['Customer_Group']           = 'Customer Group';]]>
+			</add>
+		</operation>
+	</file>
+	<file path="admin/controller/catalog/product.php">
+        <operation>
+            <search><![CDATA[if (isset($this->request->post['image'])) {]]></search>
+            <add position="before"><![CDATA[
+				$this->load->model('catalog/product');
+			   $data['discount'] = $this->model_catalog_product->getdiscount(['customer_group_id']);
+				if (isset($this->request->post['discount'])) {
+				$data['discount'] = $this->request->post['discount'];
+				 }
+				 else {
+				
+				}]]>
+			</add>
+		</operation>
+
+        <operation>
+            <search><![CDATA[$data['tab_openbay'] = $this->language->get('tab_openbay');]]></search>
+            <add position="before"><![CDATA[
+		$data['Distributor_Pricing_Tab'] = $this->language->get('entry_Distributor_Pricing');
+		$data['General_Customer'] = $this->language->get('entry_General_Customer');
+		$data['Wholesaler'] = $this->language->get('entry_Wholesaler');
+		$data['Distributor'] = $this->language->get('entry_Distributor');
+		$data['Discount_Ratio_in_Percentage'] =$this->language->get('Discount Ratio in Percentage');
+		$data['Customer_Group'] =$this->language->get('Customer Group');
+		]]>
+			</add>
+		</operation>
+	</file>
+	
+	
+
+	
+	
+	<file path="admin/view/template/catalog/product_form.tpl">
+	<operation>
+            <search><![CDATA[<li><a href="#tab-option" data-toggle="tab"><?php echo $tab_option; ?></a></li>]]></search>
+            <add position="after"><![CDATA[
+				<li><a href="#tab-Distributor_Pricing" data-toggle="tab"><?php echo $Distributor_Pricing_Tab; ?></a></li>]]>
+			</add>
+		</operation>
+        <operation>
+            <search><![CDATA[<div class="tab-pane" id="tab-recurring">]]></search>
+						<add position="before"><![CDATA[<div class="tab-pane" id="tab-Distributor_Pricing">
+						  <div class="table_responsive">
+							<table class="table table-striped table-bordered table-hover">
+							  <thead>
+							   <tr>
+								  <td class="text_left"><?php echo $Customer_Group;?></td>
+								  <td class="text_left"><?php echo $Discount_Ratio_in_Percentage?></td>
+								  <td class="text_leftt" colspan="6"></td>
+							   </tr>
+							  </thead>
+							 <tbody>
+								 <?php $discount_price_row = 0; ?>
+								<tr id="customer<?php echo $discount_price_row; ?>">
+								  <td class="text-left">
+								  <select name="customer_group" class="form-control"> 
+									<option value="1" selected="selected"><?php echo $General_Customer; ?></option>
+									<option value="2" selected="selected"><?php echo $Wholesaler; ?></option>
+									<option value="3"selected="selected"><?php echo $Distributor; ?></option>
+									</select></td>
+								  <td class="text-left">
+									 <input type="text" name="discount" value="<?php //echo $data['discount'][0]['discount']; ?>" placeholder="" class="form-control" />
+								 </td>
+							<td class="text-left"><button type="button" onclick="$('#customer<?php echo $discount_price_row; ?>').remove()" data-toggle="tooltip" title="<?php echo $button_remove; ?>" class="btn btn-danger"><i class="fa fa-minus-circle"></i></button></td>   
+
+								</tr>
+								
+							  </tbody>
+							  <tfoot>
+								<tr>
+								  <td colspan="2"></td>
+								  <td class="text-left"><button type="button" onclick="adddiscount_price()" data-toggle="tooltip" title="<?php echo $button_recurring_add; ?>" class="btn btn-primary"><i class="fa fa-plus-circle"></i></button></td>
+								</tr>
+								<?php $discount_price_row++; ?>
+							  </tfoot>
+							</table>
+						  </div>
+						</div>]]>
+	</add>
+		</operation>
+        <operation>
+            <search><![CDATA[<?php echo $footer; ?>]]></search>
+            <add position="before"><![CDATA[
+					<script type="text/javascript"><!--
+					var discount_price_row = <?php echo $discount_price_row; ?>;
+
+					function adddiscount_price() {
+					
+					discount_price_row++;
+
+					html  = '';
+					html += '<tr id="customer' + discount_price_row + '">';
+					html += '  <td class="left">';
+					html += '    <select name="customer_group" class="form-control">';
+					html += ' <option value="1" selected="selected"><?php echo $General_Customer; ?></option>';
+					 html += '  <option value="2" selected="selected"><?php echo $Wholesaler; ?></option>';
+					 html += '  <option value="3"selected="selected"><?php echo $Distributor; ?></option>';
+					html += '    </select>';
+					html += '  </td>';
+					html += '  <td class="left">';
+					html +='<input type= "text" value = "" class="form-control">';
+					html += '  </td>';
+					html += '  <td class="left">';
+					html += '    <a onclick="$(\'#customer' + discount_price_row + '\').remove()" data-toggle="tooltip" title="<?php echo $button_remove; ?>" class="btn btn-danger"><i class="fa fa-minus-circle"></i></a>';
+					html += '  </td>';
+					html += '</tr>';
+
+					$('#tab-Distributor_Pricing table tbody').append(html);
+				}
+				//--></script>]]>
+			</add>
+		</operation>
+	</file>
+	<file path="admin/model/catalog/product.php">
+	<operation>
+            <search><![CDATA[
+			$this->event->trigger('post.admin.product.edit', $product_id);]]></search>
+		
+		<add position="after"><![CDATA[
+			$query = $this->db->query("SELECT * FROM  `oc_discount_ratio_percentage` WHERE  `customer_group_id` =". $data['customer_group']);
+			if ($query->num_rows) {
+			$this->db->query("UPDATE " . DB_PREFIX . "discount_ratio_percentage SET discount = '" . $data['discount'] . "' WHERE customer_group_id = '" . (int)$data['customer_group'] . "'");
+			}
+			else{
+			 $this->db->query("INSERT INTO `" . DB_PREFIX . "discount_ratio_percentage` SET `product_id` = " . (int)$product_id . ", discount = " . $data['discount'] . ", `customer_group_id` = " . (int)$data['customer_group']);
+			}
+			]]>
+			</add>
+		</operation>
+		<operation>
+            <search><![CDATA[
+			public function addProduct($data) {]]></search>
+		
+			<add position="before"><![CDATA[public function getdiscount($customer_group_id) {
+			$discount = array();
+
+			$query = $this->db->query("SELECT discount FROM `" . DB_PREFIX . "discount_ratio_percentage` WHERE `customer_group_id` = '" . (int)$customer_group_id . "'");
+			return $query->rows;
+			//print_r();
+		}]]>
+			</add>
+		</operation>
+	</file>
+	</modification>

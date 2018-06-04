@@ -1,0 +1,397 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<modification>
+	<id>VIES EU VAT number validation</id>
+	<version>2.1.x_2.2.x_2.3.x</version>
+	<author>Inception System</author>
+	
+	<file name="catalog/view/theme/*/template/account/register.tpl">
+		<operation>
+			<search position="after" offset="1"><![CDATA[$('select[name=\'country_id\']').trigger('change');]]></search>
+			<add><![CDATA[<script type="text/javascript">
+			var vat_number_custom_field_id = 1;
+			var eu_vat_required = 0 ;
+			$('#input-custom-field' + vat_number_custom_field_id).on('blur', function() {
+					eu_vat_number_validation();
+			});
+			function eu_vat_number_validation() {
+				var vat_no = $('#input-custom-field' + vat_number_custom_field_id).val();
+				var state = vat_no.substring(0, 2);
+				var v_no = vat_no.substring(2, 20);
+				
+				var patt = new RegExp("[A-Z]{2}[0-9]+");
+				var format_valid = patt.test(vat_no);
+				
+				$.ajax({
+				  type: 'POST',
+				  dataType: 'json',
+				  url: 'index.php?route=account/register/eu_vat_number_validation',
+				  data: { vat_number : $('#input-custom-field' + vat_number_custom_field_id).val() , state , v_no, format_valid },
+				  beforeSend: function() {
+						$('#custom-field' + vat_number_custom_field_id).after(' <i class="fa fa-circle-o-notch fa-spin"></i>');
+					},
+					complete: function(json) {
+						$('.fa-spin').remove();
+					},
+				  success: function(json) {
+						$('.alert').remove();
+						
+						if(json.valid || json.format_valid) {
+							$('#custom-field' + vat_number_custom_field_id).after('<div class="' + (json['valid'] ? 'alert alert-success alert-dismissible' : 'alert alert-danger alert-dismissible' ) + '" role="alert">VAT Number is validate.</div>');		
+						} else {
+							$('#custom-field' + vat_number_custom_field_id).after('<div class="' + (json['valid'] ? 'alert alert-success alert-dismissible' : 'alert alert-danger alert-dismissible' ) + '" role="alert">VAT Number is not validate. Please enter valid format or valid VAT number</div>');			
+						}
+						if(json.error) {
+							$('#custom-field' + vat_number_custom_field_id).after('<div class="' + (json['valid'] ? 'alert alert-success alert-dismissible' : 'alert alert-danger alert-dismissible' ) + '" role="alert">'+ json.error.info +'</div>');			
+						}
+						
+						$('.alert').delay(6000).slideUp('slow');		
+				  }						
+				});
+			}
+			</script>]]></add>
+		</operation>
+	</file>
+	
+	<file name="catalog/controller/account/register.php">
+		<operation>
+			<search position="before"><![CDATA[public function customfield() {]]></search>
+			<add><![CDATA[public function eu_vat_number_validation() {
+			$json = array();
+			
+			require('eu_vat/vatClient.php');
+
+			// The VAT number you wish to lookup
+			$vat_number = $this->request->post['v_no'];
+			$country_code = $this->request->post['state'];
+			$format_valid = $this->request->post['format_valid'];
+			
+			
+			if($format_valid == "true") {
+			
+				$api = new vatRegistration();
+
+				// Perform our VAT number check
+				$json = $api->checkVat($vat_number, $country_code);
+				
+				
+				// Handle the response details array below...
+				//echo '<p><pre>' . print_r($json, true) . '</pre></p>';
+			
+			} else {
+				$json['format_valid'] = false;
+			}
+
+			$this->response->addHeader('Content-Type: application/json');
+			$this->response->setOutput(json_encode($json));
+		}]]></add>
+		</operation>
+	</file>
+	
+	<file name="catalog/view/theme/*/template/checkout/register.tpl">
+		<operation>
+			<search position="after" offset="1"><![CDATA[$('#collapse-payment-address select[name=\'country_id\']').trigger('change');]]></search>
+			<add><![CDATA[<script type="text/javascript">
+			var vat_number_custom_field_id = 1;
+			var eu_vat_required = 0 ;
+			$('#input-payment-custom-field' + vat_number_custom_field_id).on('blur', function() {
+					eu_vat_number_validation();
+			});
+			function eu_vat_number_validation() {
+				var vat_no = $('#input-payment-custom-field' + vat_number_custom_field_id).val();
+				var state = vat_no.substring(0, 2);
+				var v_no = vat_no.substring(2, 20);
+				
+				var patt = new RegExp("[A-Z]{2}[0-9]+");
+				var format_valid = patt.test(vat_no);
+				
+				$.ajax({
+				  type: 'POST',
+				  dataType: 'json',
+				  url: 'index.php?route=account/register/eu_vat_number_validation',
+				  data: { vat_number : $('#input-payment-custom-field' + vat_number_custom_field_id).val() , state , v_no, format_valid },
+				  beforeSend: function() {
+						$('#payment-custom-field' + vat_number_custom_field_id).after(' <i class="fa fa-circle-o-notch fa-spin"></i>');
+					},
+					complete: function(json) {
+						$('.fa-spin').remove();
+					},
+				  success: function(json) {
+						$('.alert').remove();
+						
+						if(json.valid || json.format_valid) {
+							$('#payment-custom-field' + vat_number_custom_field_id).after('<div class="' + (json['valid'] ? 'alert alert-success alert-dismissible' : 'alert alert-danger alert-dismissible' ) + '" role="alert">VAT Number is validate.</div>');		
+						} else {
+							$('#payment-custom-field' + vat_number_custom_field_id).after('<div class="' + (json['valid'] ? 'alert alert-success alert-dismissible' : 'alert alert-danger alert-dismissible' ) + '" role="alert">VAT Number is not validate. Please enter valid format or valid VAT number</div>');			
+						}
+						if(json.error) {
+							$('#payment-custom-field' + vat_number_custom_field_id).after('<div class="' + (json['valid'] ? 'alert alert-success alert-dismissible' : 'alert alert-danger alert-dismissible' ) + '" role="alert">'+ json.error.info +'</div>');			
+						}
+						
+						$('.alert').delay(6000).slideUp('slow');		
+				  }						
+				});
+			}
+			</script>]]></add>
+		</operation>
+	</file>
+	
+	<file name="catalog/controller/checkout/register.php">
+		<operation>
+			<search position="before"><![CDATA[public function save() {]]></search>
+			<add><![CDATA[public function eu_vat_number_validation() {
+			$json = array();
+			
+			require('eu_vat/vatClient.php');
+
+			// The VAT number you wish to lookup
+			$vat_number = $this->request->post['v_no'];
+			$country_code = $this->request->post['state'];
+			$format_valid = $this->request->post['format_valid'];
+			
+			
+			if($format_valid == "true") {
+			
+				$api = new vatRegistration();
+
+				// Perform our VAT number check
+				$json = $api->checkVat($vat_number, $country_code);
+				
+				
+				// Handle the response details array below...
+				//echo '<p><pre>' . print_r($json, true) . '</pre></p>';
+			
+			} else {
+				$json['format_valid'] = false;
+			}
+
+			$this->response->addHeader('Content-Type: application/json');
+			$this->response->setOutput(json_encode($json));
+		}]]></add>
+		</operation>
+	</file>
+	
+	<file name="catalog/view/theme/*/template/checkout/guest.tpl">
+		<operation>
+			<search position="after" offset="1"><![CDATA[$('#collapse-payment-address select[name=\'country_id\']').trigger('change');]]></search>
+			<add><![CDATA[<script type="text/javascript">
+			var vat_number_custom_field_id = 1;
+			var eu_vat_required = 0 ;
+			$('#input-payment-custom-field' + vat_number_custom_field_id).on('blur', function() {
+					eu_vat_number_validation();
+			});
+			function eu_vat_number_validation() {
+				var vat_no = $('#input-payment-custom-field' + vat_number_custom_field_id).val();
+				var state = vat_no.substring(0, 2);
+				var v_no = vat_no.substring(2, 20);
+				
+				var patt = new RegExp("[A-Z]{2}[0-9]+");
+				var format_valid = patt.test(vat_no);
+				
+				$.ajax({
+				  type: 'POST',
+				  dataType: 'json',
+				  url: 'index.php?route=account/register/eu_vat_number_validation',
+				  data: { vat_number : $('#input-payment-custom-field' + vat_number_custom_field_id).val() , state , v_no, format_valid },
+				  beforeSend: function() {
+						$('#payment-custom-field' + vat_number_custom_field_id).after(' <i class="fa fa-circle-o-notch fa-spin"></i>');
+					},
+					complete: function(json) {
+						$('.fa-spin').remove();
+					},
+				  success: function(json) {
+						$('.alert').remove();
+						
+						if(json.valid || json.format_valid) {
+							$('#payment-custom-field' + vat_number_custom_field_id).after('<div class="' + (json['valid'] ? 'alert alert-success alert-dismissible' : 'alert alert-danger alert-dismissible' ) + '" role="alert">VAT Number is validate.</div>');		
+						} else {
+							$('#payment-custom-field' + vat_number_custom_field_id).after('<div class="' + (json['valid'] ? 'alert alert-success alert-dismissible' : 'alert alert-danger alert-dismissible' ) + '" role="alert">VAT Number is not validate. Please enter valid format or valid VAT number</div>');			
+						}
+						if(json.error) {
+							$('#payment-custom-field' + vat_number_custom_field_id).after('<div class="' + (json['valid'] ? 'alert alert-success alert-dismissible' : 'alert alert-danger alert-dismissible' ) + '" role="alert">'+ json.error.info +'</div>');			
+						}
+						
+						$('.alert').delay(6000).slideUp('slow');		
+				  }						
+				});
+			}
+			</script>]]></add>
+		</operation>
+	</file>
+	
+	<file name="catalog/controller/checkout/guest.php">
+		<operation>
+			<search position="before"><![CDATA[public function save() {]]></search>
+			<add><![CDATA[public function eu_vat_number_validation() {
+			$json = array();
+			
+			require('eu_vat/vatClient.php');
+
+			// The VAT number you wish to lookup
+			$vat_number = $this->request->post['v_no'];
+			$country_code = $this->request->post['state'];
+			$format_valid = $this->request->post['format_valid'];
+			
+			
+			if($format_valid == "true") {
+			
+				$api = new vatRegistration();
+
+				// Perform our VAT number check
+				$json = $api->checkVat($vat_number, $country_code);
+				
+				
+				// Handle the response details array below...
+				//echo '<p><pre>' . print_r($json, true) . '</pre></p>';
+			
+			} else {
+				$json['format_valid'] = false;
+			}
+
+			$this->response->addHeader('Content-Type: application/json');
+			$this->response->setOutput(json_encode($json));
+		}]]></add>
+		</operation>
+	</file>
+	
+	<file name="admin/view/template/customer/customer_form.tpl">
+		<operation>
+			<search position="after" offset="3" index="3"><![CDATA[<?php if ($custom_field['type'] == 'text') { ?>]]></search>
+			<add><![CDATA[html += '		<div class="input-group" id="msg'+ address_row +'">';]]></add>
+		</operation>
+	</file>
+	
+	<file name="admin/view/template/customer/customer_form.tpl">
+		<operation>
+			<search position="after" offset="5" index="3"><![CDATA[<?php if ($custom_field['type'] == 'text') { ?>]]></search>
+			<add><![CDATA[
+			html += '		<span class="input-group-btn"><button class="btn btn-primary" type="button" onclick="eu_vat_number_validation(' + address_row + ',<?php echo $custom_field['custom_field_id']; ?>);">Validate</button></span>';
+			html += '		</div>';]]></add>
+		</operation>
+	</file>
+	
+	<file name="admin/view/template/customer/customer_form.tpl">
+		<operation>
+			<search position="before"><![CDATA[<?php echo $footer; ?>]]></search>
+			<add><![CDATA[<script type="text/javascript"><!--
+  			
+  			function eu_vat_number_validation(i, vat_custom_field_id) {
+			
+				var vat_no = $('#input-address' + i + '-custom-field' + vat_custom_field_id).val();
+				var state = vat_no.substring(0, 2);
+				var v_no = vat_no.substring(2, 20);
+				
+				var patt = new RegExp("[A-Z]{2}[0-9]+");
+				var format_valid = patt.test(vat_no);
+  				
+  				$.ajax({
+				  type: 'post',
+				  dataType: 'json',
+				  url: 'index.php?route=customer/customer/eu_vat_number_validation&token=<?php echo $token; ?>',
+				  data: { vat_number : $('#input-address' + i + '-custom-field' + vat_custom_field_id).val() , state , v_no, format_valid },
+				  beforeSend: function() {
+						$('#msg'+ i).after(' <i class="fa fa-circle-o-notch fa-spin"></i>');
+					},
+					complete: function() {
+						$('.fa-spin').remove();
+					},
+					success: function(json) {
+						$('.alert').remove();
+						
+						if(json.valid || json.format_valid) {
+							$('#msg'+ i).after('<div class="' + (json['valid'] ? 'alert alert-success alert-dismissible' : 'alert alert-danger alert-dismissible' ) + '" role="alert">VAT Number is validate.</div>');		
+						} else {
+							$('#msg'+ i).after('<div class="' + (json['valid'] ? 'alert alert-success alert-dismissible' : 'alert alert-danger alert-dismissible' ) + '" role="alert">VAT Number is not validate. Please enter valid format or valid VAT number</div>');			
+						}
+						if(json.error) {
+							$('#msg'+ i).after('<div class="' + (json['valid'] ? 'alert alert-success alert-dismissible' : 'alert alert-danger alert-dismissible' ) + '" role="alert">'+ json.error.info +'</div>');			
+						}
+						
+						$('.alert').delay(6000).slideUp('slow');		
+				  }				
+				});
+  			}
+			
+			var vat_number_custom_field_id = 1;
+				var eu_vat_required = 0 ;
+			
+			$('#input-custom-field' + vat_number_custom_field_id).on('blur', function() {
+					eu_vat_number_validation_account();
+			});
+			
+			function eu_vat_number_validation_account() {
+				
+			
+				var vat_no = $('#input-custom-field' + vat_number_custom_field_id).val();
+				var state = vat_no.substring(0, 2);
+				var v_no = vat_no.substring(2, 20);
+				
+				var patt = new RegExp("[A-Z]{2}[0-9]+");
+				var format_valid = patt.test(vat_no);
+				
+				$.ajax({
+				  type: 'POST',
+				  dataType: 'json',
+				  url: 'index.php?route=customer/customer/eu_vat_number_validation&token=<?php echo $token; ?>',
+				  data: { vat_number : $('#input-custom-field' + vat_number_custom_field_id).val() , state , v_no, format_valid },
+				  beforeSend: function() {
+						$('#input-custom-field' + vat_number_custom_field_id).after(' <i class="fa fa-circle-o-notch fa-spin"></i>');
+					},
+					complete: function(json) {
+						$('.fa-spin').remove();
+					},
+				  success: function(json) {
+						$('.alert').remove();
+						
+						if(json.valid || json.format_valid) {
+							$('#input-custom-field' + vat_number_custom_field_id).after('<div class="' + (json['valid'] ? 'alert alert-success alert-dismissible' : 'alert alert-danger alert-dismissible' ) + '" role="alert">VAT Number is validate.</div>');		
+						} else {
+							$('#input-custom-field' + vat_number_custom_field_id).after('<div class="' + (json['valid'] ? 'alert alert-success alert-dismissible' : 'alert alert-danger alert-dismissible' ) + '" role="alert">VAT Number is not validate. Please enter valid format or valid VAT number</div>');			
+						}
+						if(json.error) {
+							$('#input-custom-field' + vat_number_custom_field_id).after('<div class="' + (json['valid'] ? 'alert alert-success alert-dismissible' : 'alert alert-danger alert-dismissible' ) + '" role="alert">'+ json.error.info +'</div>');			
+						}
+						
+						$('.alert').delay(6000).slideUp('slow');		
+				  }						
+				});
+			}
+  		//--></script> ]]></add>
+		</operation>
+	</file>
+	
+	<file name="admin/controller/customer/customer.php">
+		<operation>
+			<search position="before"><![CDATA[public function customfield() {]]></search>
+			<add><![CDATA[public function eu_vat_number_validation() {
+			$json = array();
+			
+			require('../eu_vat/vatClient.php');
+
+			// The VAT number you wish to lookup
+			$vat_number = $this->request->post['v_no'];
+			$country_code = $this->request->post['state'];
+			$format_valid = $this->request->post['format_valid'];
+			
+			
+			if($format_valid == "true") {
+			
+				$api = new vatRegistration();
+
+				// Perform our VAT number check
+				$json = $api->checkVat($vat_number, $country_code);
+				
+				
+				// Handle the response details array below...
+				//echo '<p><pre>' . print_r($json, true) . '</pre></p>';
+			
+			} else {
+				$json['format_valid'] = false;
+			}
+
+			$this->response->addHeader('Content-Type: application/json');
+			$this->response->setOutput(json_encode($json));
+		}]]></add>
+		</operation>
+	</file>
+	
+</modification>
